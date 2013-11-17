@@ -1,4 +1,4 @@
-@HOOK   0x00509D2F  _Message_Input_Display_Messages_Typed_By_Yourself
+@JMP   0x00509D2F  _Message_Input_Display_Messages_Typed_By_Yourself
 
 str_message_fmt: db "%s: %s"
 msg_buf: TIMES 512 db 0
