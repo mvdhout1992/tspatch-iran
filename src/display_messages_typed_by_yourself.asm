@@ -40,4 +40,6 @@ _Message_Input_Display_Messages_Typed_By_Yourself:
     push    0 
     push    0 
     call    0x00572FE0 ;  MessageListClass__Add_Message
+    
+.Ret:
     jmp     0x00509D36
