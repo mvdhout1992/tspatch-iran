@@ -1,0 +1,5 @@
+spawn.bat
+# temporary files due to linking
+/src/*.inc
+# patched executables
+/*.exe
