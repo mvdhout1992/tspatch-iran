@@ -94,6 +94,7 @@ str_OtherSectionFmt db"Other%d",0
 str_Port        db"Port",0
 str_IP          db"IP",0
 str_SpawnArg    db"-SPAWN",0
+str_MultiEngineer db"MultiEngineer",0
 
 def_port dd 1234
 
@@ -206,7 +207,12 @@ Initialize_Spawn:
      SpawnINI_Get_Int str_Settings, str_GameSpeed, 0
      mov    dword [0x007E4720], eax
      
-    mov   DWORD [0x007E245C], 0 ; WOL?
+    SpawnINI_Get_Bool str_Settings, str_MultiEngineer, 0
+     mov    BYTE [0x007E247C], al
+     
+    
+     
+    mov   DWORD [0x007E245C], 1 ; WOL?
      
 
     
@@ -328,10 +334,11 @@ Initialize_Spawn:
       call   0x004B9440 
        
       call   0x00462C60 
-             
-      mov      ecx, [0x0074C8F0] 
-      mov     edx, [ecx] 
-      call    dword [edx+0Ch]
+     
+;; Hide mouse, shouldn't be needed and makes mouse invisible in the match if it's there.
+;      mov      ecx, [0x0074C8F0] 
+;      mov     edx, [ecx] 
+;      call    dword [edx+0Ch]
    
 .Ret:   
     mov       eax, 1
