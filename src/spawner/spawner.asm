@@ -168,7 +168,7 @@ Initialize_Spawn:
       mov      dword [0x007E2480], eax ; unit count
       
         SpawnINI_Get_Int str_Settings, str_TechLevel, 10
-      mov      dword [0x007026C0], eax ; tech level
+      mov      dword [0x006FB628], eax ; tech level
       
     SpawnINI_Get_Int str_Settings, str_AIPlayers, 0
       mov       dword [0x007E2484], eax ; AI players
