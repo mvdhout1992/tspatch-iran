@@ -53,7 +53,6 @@ endstruc
 
 @JMP   0x004E1DE0  _Select_Game_Init_Spawner
 @JMP   0x00609470  _Send_Statistics_Packet_RETN_Patch ; Games tries to send statistics when match ends which causes crash
-@JMP   0x005EEE60  _SessionClass__Free_Scenario_Descriptions_RETN_Patch ; Causes crash at game exit
 
 ; NEED TO ADD SendFix & ReceiveFix
 
@@ -210,9 +209,6 @@ Initialize_Spawn:
     SpawnINI_Get_Bool str_Settings, str_MultiEngineer, 0
      mov    BYTE [0x007E247C], al
      
-    
-     
-    mov   DWORD [0x007E245C], 1 ; WOL?
      
 
     
@@ -220,7 +216,7 @@ Initialize_Spawn:
         call    0x005EE7D0
         
          ; scenario
-     LEA EAX, [0x007E28B0]
+     LEA EAX, [0x007E28B8]
     SpawnINI_Get_String str_Settings, str_Scenario, str_Empty, EAX, 32
        
        SpawnINI_Get_Int str_Settings, str_Seed, 0
@@ -291,7 +287,7 @@ Initialize_Spawn:
       ;start scenario 
       push   -1 
       xor      edx, edx 
-      mov      ecx, 0x007E28B0
+      mov      ecx, 0x007E28B8
       call   0x005DB170 
        
       call   0x00462C60 
