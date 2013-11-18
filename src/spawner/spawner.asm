@@ -12,6 +12,9 @@ hp_data:
     .inet_addr  RESD 1
     .FileClass_SPAWN  RESB 128
     .INIClass_SPAWN   RESB 256
+    .CurrentOpponent RESD 1
+    .OtherSection   RESB 128
+    .IP_temp    RESB 32
     
 [section .text]
 
@@ -49,8 +52,8 @@ endstruc
 
 
 @JMP   0x004E1DE0  _Select_Game_Init_Spawner
-@JMP   0x00609470  _Send_Statistics_Packet_RETN_Patch
-@JMP   0x005EEE60  _SessionClass__Free_Scenario_Descriptions_RETN_Patch
+@JMP   0x00609470  _Send_Statistics_Packet_RETN_Patch ; Games tries to send statistics when match ends which causes crash
+@JMP   0x005EEE60  _SessionClass__Free_Scenario_Descriptions_RETN_Patch ; Causes crash at game exit
 
 ; NEED TO ADD SendFix & ReceiveFix
 
@@ -87,6 +90,9 @@ str_Credits     db"Credits",0
 str_Name        db"Name",0
 str_Side        db"Side",0
 str_Color       db"Color",0
+str_OtherSectionFmt db"Other%d",0
+str_Port        db"Port",0
+str_IP          db"IP",0
 
 def_port dd 1234
 
@@ -146,7 +152,7 @@ Initialize_Spawn:
     mov   BYTE [0x007E4580], 1 ; GameActive, needs to be set here or the game gets into an infinite loop trying to create spawning units
 
           ;set session 
-      mov      DWORD [0x007E2458], 4 ; sessiontype
+      mov      DWORD [0x007E2458], 5 ; sessiontype
        
     SpawnINI_Get_Int str_Settings, str_UnitCount, 1
       mov      dword [0x007E2480], eax ; unit count
@@ -184,6 +190,8 @@ Initialize_Spawn:
       SpawnINI_Get_Int str_Settings, str_Credits, 10000
       mov DWORD [0x007E2470], eax   
 
+    SpawnINI_Get_Int str_Settings, str_Port, 1234
+      mov DWORD [0x0070FCF0], eax   
       
      SpawnINI_Get_Int str_Settings, str_GameSpeed, 0
      mov    dword [0x007E4720], eax
@@ -386,38 +394,74 @@ Add_Human_Player:
       retn
       
 Add_Human_Opponents:
-          push   0x4D 
+    ; copy opponents
+    XOR ECX,ECX
+    mov     DWORD [hp_data.CurrentOpponent], ECX
+    
+.next_opp:
+    MOV     ECX, [hp_data.CurrentOpponent]
+    ADD ECX,1
+    mov     DWORD [hp_data.CurrentOpponent], ECX
+    
+    push    ecx
+    push    str_OtherSectionFmt  ;Other%d
+    push    hp_data.OtherSection
+    call    0x006B52EE ; _sprintf
+    add     esp, 0x0C
+    
+    
+
+        push   0x4D 
       call   0x006B51D7 
        
       add     esp, 4 
+      
        
       mov      esi, eax 
 
       lea     ecx, [esi+14h] 
       call   0x004EF040 
+      
+    
+      
+                 LEA EAX, [esi]
+    SpawnINI_Get_String hp_data.OtherSection, str_Name, str_Empty, EAX, 0x14
+    
+    LEA EAX, [esi]
+    mov eax, [eax]
+        TEST EAX,EAX
+    ; if no name present for this section, this is the last
+    JE .Exit
+    
        
-      lea      ecx, [esi] 
-      push   str_debugplayer2 
-      push   ecx 
-      call   0x006BE630 ; strcpy
-       
-      add     esp, 8 
-       
-       ; Player side
-       mov  eax, 1
+        SpawnINI_Get_Int hp_data.OtherSection, str_Side, -1
         mov      dword [esi+0x35], eax ; side 
-        mov BYTE [0x7E2500], al ; For side specific mix files loading and stuff
+        
+            CMP EAX,-1
+    JE .next_opp
+
+        SpawnINI_Get_Int hp_data.OtherSection, str_Color, -1
+        mov      dword [esi+0x39], eax  ; color
+        
+            CMP EAX,-1
+    JE .next_opp
      
     mov     eax, 1
     MOV [esi + 0x14 + NetAddress.zero], WORD 0
     
-    push    str_localhost
+          mov      DWORD [0x007E2458], 4 ; sessiontype Lan
+    
+    
+    LEA EAX, [hp_data.IP_temp]
+    SpawnINI_Get_String hp_data.OtherSection, str_IP, str_Empty, EAX, 32
+    
+    push    hp_data.IP_temp
     mov eax, [hp_data.inet_addr]
     call    eax
     
     MOV [esi + 0x14 + NetAddress.ip], EAX
     
-    mov eax, [def_port]
+    SpawnINI_Get_Int hp_data.OtherSection, str_Port, 0
     AND EAX, 0xFFFF
 
     PUSH EAX
@@ -434,8 +478,12 @@ Add_Human_Opponents:
       lea      eax, [hp_data.TempPtr] 
       push   eax 
       mov      ecx, 0x007E3E90 
-      call   0x0044D690 
+      call   0x0044D690
+      
+      jmp   .next_opp
+.Exit:
       retn
+    
     
 Import_int_addr:
     PUSH str_wsock32_dll
