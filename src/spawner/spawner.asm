@@ -93,6 +93,7 @@ str_Color       db"Color",0
 str_OtherSectionFmt db"Other%d",0
 str_Port        db"Port",0
 str_IP          db"IP",0
+str_SpawnArg    db"-SPAWN",0
 
 def_port dd 1234
 
@@ -141,6 +142,15 @@ Initialize_Spawn:
     jz      .Ret_Exit
     
     mov     DWORD [hp_data.SpawnerActive], 1
+ 
+;; Commented out at the moment so I don't need to supply the -SPAWN arg the whole time 
+;    call    [0x006CA24C] ; GetCommandLineA()
+;    push str_SpawnArg
+;    push eax
+;    CALL 0x006B6730 ; stristr_
+;    add esp, 8
+;    TEST EAX,EAX
+;    JE .Exit_Error
     
     call    Load_SPAWN_INI
      cmp    eax, 0
@@ -377,8 +387,22 @@ Add_Human_Player:
        
        ; Player side
         SpawnINI_Get_Int str_Settings, str_Side, 0
-        mov      dword [esi+0x35], eax ; side 
-        mov BYTE [0x7E2500], al ; For side specific mix files loading and stuff
+        mov      dword [esi+0x35], eax ; side
+        
+
+        ; Invert AL to set byte related to what sidebar and speech graphics to load
+        cmp     al, 1
+        jz      .Set_AL_To_Zero
+        
+        mov     al, 1
+        jmp     .Past_AL_Invert
+        
+.Set_AL_To_Zero:
+            mov     al, 0
+        
+.Past_AL_Invert:        
+        mov BYTE [0x7E2500], al ; For side specific mix files loading and stuff, without sidebar and speech hack
+
 
         SpawnINI_Get_Int str_Settings, str_Color, 0
         mov      dword [esi+0x39], eax  ; color
