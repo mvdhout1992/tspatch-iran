@@ -12,6 +12,12 @@ hp_data:
     
 [section .text]
 
+struc NetAddress
+    .port:      RESD 1
+    .ip:        RESD 1
+    .zero:      RESW 1
+endstruc
+
 
 @JMP   0x004E1DE0  _Select_Game_Init_Spawner
 @JMP   0x00609470  _Send_Statistics_Packet_RETN_Patch
@@ -49,7 +55,9 @@ Initialize_Spawn:
       mov       dword [0x007E2514], 60 ; RequestedFPS
       
        
-      mov      dword [0x007E2464], 2   ;PacketProtocol 
+      mov      dword [0x007E2464], 2   ;PacketProtocol
+      
+      mov   DWORD [0x007E245C], 0 ; WOL?
       
         mov     ecx, 0x07E2458; offset SessionClass_Session
         call    0x005EE7D0
@@ -57,43 +65,53 @@ Initialize_Spawn:
       mov   DWORD [0x007E4934], 324324 ; Seed, TODO NEEDS TO BE READ FROM INI
       call  0x004E38A0 ; Init_Random()
       
-      push  str_gcanyonmap
-      push   0x007E28B0 ; map string
+    push  str_gcanyonmap
+      push   0x007E28B0 ; map buffer used by something
       call   0x006BE630 ; strcpy
       add     esp, 8 
       
-      push   0x4D 
-      call   0x006B51D7 
-       
-      add     esp, 4 
-       
-      mov      esi, eax 
+    call    Add_Human_Player
+;    call    Add_Human_Opponents
+    
+    
+    ; do networking crap
+    
+    push    35088h
+    call    0x006B51D7 ; operator new(uint)
+    
+    mov     ecx, eax
+    call    0x006A1E70 ; UDPInterfaceClass::UDPInterfaceClass(void)
+    
+    mov     [0x0074C8D8], eax ; _ptr_WinsockInterface
+    
+    MOV ECX, [0x0074C8D8] ; _ptr_WinsockInterface
+    CALL    0x006A1180   ;   int WinsockInterfaceClass::Init(void)
+    
+    push    0
+    MOV ECX, [0x0074C8D8] ; _ptr_WinsockInterface
+    call    0x006A2130      ;   UDPInterfaceClass::Open_Socket(unsigned int)
+    
+    MOV ECX, [0x0074C8D8] ; _ptr_WinsockInterface
+    call    0x006A1030  ; int WinsockInterfaceClass::Start_Listening(void)
+    
+    MOV ECX, [0x0074C8D8] ; _ptr_WinsockInterface
+    call    0x006A10A0 ; void WinsockInterfaceClass::Discard_In_Buffers(void)
+    
+    MOV ECX, [0x0074C8D8] ; _ptr_WinsockInterface
+    call    0x006A1110  ; void WinsockInterfaceClass::Discard_Out_Buffers(void)
+    
+    mov     ecx, 0x007E45A0 ; offset IPXManagerClass Ipx
+    push    1
+    push    258h
+    push    0FFFFFFFFh
+    push    1Eh
+    call    0x004F05B0 ; IPXManagerClass::Set_Timing(ulong,ulong,ulong)
+    
+    mov DWORD [0x007E250C], 15
+    MOV DWORD [0x007E2510], 3
 
-      lea     ecx, [esi+14h] 
-      call   0x004EF040 
-       
-      lea      ecx, [esi] 
-      push   str_debugplayer 
-      push   ecx 
-      call   0x006BE630 ; strcpy
-       
-      add     esp, 8 
-       
-       ; Player side
-       mov  eax, 1
-        mov      dword [esi+0x35], eax ; side 
-        mov BYTE [0x7E2500], al ; For side specific mix files loading and stuff
-
-        mov      dword [esi+0x39], 3  ; color
-
-
-      mov      dword [esi+0x41], -1 
-       
-      mov      [hp_data.TempPtr], esi 
-      lea      eax, [hp_data.TempPtr] 
-      push   eax 
-      mov      ecx, 0x007E3E90 
-      call   0x0044D690 
+    call    0x00574F90 ; Init_Network
+    
 
       ;start scenario 
       push   -1 
@@ -172,3 +190,78 @@ _Select_Game_Init_Spawner:
     push    esi
     push    edi
     jmp     0x004E1DF2
+    
+Add_Human_Player:      
+      push   0x4D 
+      call   0x006B51D7 
+       
+      add     esp, 4 
+       
+      mov      esi, eax 
+
+      lea     ecx, [esi+14h] 
+      call   0x004EF040 
+       
+      lea      ecx, [esi] 
+      push   str_debugplayer 
+      push   ecx 
+      call   0x006BE630 ; strcpy
+       
+      add     esp, 8 
+       
+       ; Player side
+       mov  eax, 1
+        mov      dword [esi+0x35], eax ; side 
+        mov BYTE [0x7E2500], al ; For side specific mix files loading and stuff
+
+        mov      dword [esi+0x39], 3  ; color
+
+
+      mov      dword [esi+0x41], -1 
+       
+      mov      [hp_data.TempPtr], esi 
+      lea      eax, [hp_data.TempPtr] 
+      push   eax 
+      mov      ecx, 0x007E3E90 
+      call   0x0044D690 
+      retn
+      
+Add_Human_Opponents:
+          push   0x4D 
+      call   0x006B51D7 
+       
+      add     esp, 4 
+       
+      mov      esi, eax 
+
+      lea     ecx, [esi+14h] 
+      call   0x004EF040 
+       
+      lea      ecx, [esi] 
+      push   str_debugplayer 
+      push   ecx 
+      call   0x006BE630 ; strcpy
+       
+      add     esp, 8 
+       
+       ; Player side
+       mov  eax, 1
+        mov      dword [esi+0x35], eax ; side 
+        mov BYTE [0x7E2500], al ; For side specific mix files loading and stuff
+     
+    mov     eax, 1
+    MOV [esi + 0x14 + NetAddress.zero], WORD 0
+    MOV [esi + 0x14 + NetAddress.ip], EAX
+    MOV [esi + 0x14 + NetAddress.port], EAX
+
+        mov      dword [esi+0x39], 3  ; color
+
+
+      mov      dword [esi+0x41], -1 
+       
+      mov      [hp_data.TempPtr], esi 
+      lea      eax, [hp_data.TempPtr] 
+      push   eax 
+      mov      ecx, 0x007E3E90 
+      call   0x0044D690 
+      retn
