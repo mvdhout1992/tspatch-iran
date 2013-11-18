@@ -11,7 +11,7 @@ hp_data:
     .SpawnerActive RESD 1
     .inet_addr  RESD 1
     .FileClass_SPAWN  RESB 128
-    .INIClass_SPAWN   RESB 64
+    .INIClass_SPAWN   RESB 256
     
 [section .text]
 
@@ -20,6 +20,32 @@ struc NetAddress
     .ip:        RESD 1
     .zero:      RESW 1
 endstruc
+
+   %macro SpawnINI_Get_Int 3
+      push %3 
+      push %2
+      push %1
+      mov   ecx, hp_data.INIClass_SPAWN
+      call 0x004DD140      ;Get_Int() 
+   %endmacro 
+
+     %macro SpawnINI_Get_Bool 3
+      push %3 
+      push %2
+      push %1
+      mov   ecx, hp_data.INIClass_SPAWN
+      call 0x004DE140		;Get_Bool()
+   %endmacro
+   
+   %macro SpawnINI_Get_String 5
+            push	%5
+            push	%4
+            push	%3
+            push	%2
+            push	%1
+            mov		ecx, hp_data.INIClass_SPAWN
+            call	0x004DDF60		;Get_String()
+%endmacro
 
 
 @JMP   0x004E1DE0  _Select_Game_Init_Spawner
@@ -41,6 +67,26 @@ str_wsock32_dll  db "wsock32.dll",0
 str_inet_addr    db "inet_addr",0
 str_localhost    db "127.0.0.1",0
 str_spawn_ini   db "SPAWN.INI",0
+str_Settings    db "Settings",0
+str_UnitCount   db"UnitCount",0
+str_Scenario    db"Scenario",0
+str_Empty       db"",0
+str_GameSpeed   db "GameSpeed",0
+str_Seed        db"Seed",0
+str_TechLevel   db"TechLevel",0
+str_AIPlayers   db"AIPlayers",0
+str_AIDifficulty db"AIDifficulty",0
+str_HarvesterTruce db"HarvesterTruce",0
+str_BridgeDestroy db"BridgeDestroy",0
+str_FogOfWar    db"FogOfWar",0
+str_Crates      db"Crates",0
+str_ShortGame   db"ShortGame",0
+str_Bases       db"Bases",0
+str_MCVRedeploy db"MCVRedeploy",0
+str_Credits     db"Credits",0
+str_Name        db"Name",0
+str_Side        db"Side",0
+str_Color       db"Color",0
 
 def_port dd 1234
 
@@ -66,13 +112,15 @@ Load_SPAWN_INI:
 
     ; initialize INIClass
     MOV ECX, hp_data.INIClass_SPAWN
-    CALL 0x004DF220 ; INIClass__INIClass
+    CALL 0x004E8A30 ; INIClass__INIClass
 
     ; load FileClass to INIClass
     push 0
-    push hp_data.FileClass_SPAWN
+    push 0
+    mov     eax, hp_data.FileClass_SPAWN
+    push    eax
     MOV ECX, hp_data.INIClass_SPAWN
-    CALL 0x004DB780 ; INIClass__Load
+    CALL 0x00449F30 ; INIClass__Load
     
     mov     eax, 1
     retn
@@ -100,28 +148,75 @@ Initialize_Spawn:
           ;set session 
       mov      DWORD [0x007E2458], 4 ; sessiontype
        
-      mov      dword [0x007E2480], 2 ; unit count
-      mov      dword [0x007026C0], 10 ; tech level
+    SpawnINI_Get_Int str_Settings, str_UnitCount, 1
+      mov      dword [0x007E2480], eax ; unit count
       
-      mov       dword [0x007E2484], 0 ; AI players
+        SpawnINI_Get_Int str_Settings, str_TechLevel, 10
+      mov      dword [0x007026C0], eax ; tech level
       
-      mov       dword [0x007E2514], 60 ; RequestedFPS
+    SpawnINI_Get_Int str_Settings, str_AIPlayers, 0
+      mov       dword [0x007E2484], eax ; AI players
+   
+    SpawnINI_Get_Int str_Settings, str_AIDifficulty, 1   
+      mov   dword [0x007E2488], eax
       
-       
-      mov      dword [0x007E2464], 2   ;PacketProtocol
+      SpawnINI_Get_Bool str_Settings, str_HarvesterTruce, 0
+      mov BYTE [0x007E248D], al
       
-      mov   DWORD [0x007E245C], 0 ; WOL?
+     SpawnINI_Get_Bool str_Settings, str_BridgeDestroy, 1 
+      mov BYTE [0x007E2474], al
       
-        mov     ecx, 0x07E2458; offset SessionClass_Session
+      SpawnINI_Get_Bool str_Settings, str_FogOfWar, 0
+      mov BYTE [0x007E248F], al     
+ 
+      SpawnINI_Get_Bool str_Settings, str_Crates, 0
+      mov BYTE [0x007E2475], al
+     
+      SpawnINI_Get_Bool str_Settings, str_ShortGame, 0
+      mov BYTE [0x007E2476], al     
+  
+      SpawnINI_Get_Bool str_Settings, str_Bases, 1
+      mov BYTE [0x007E246C], al      
+ 
+      SpawnINI_Get_Bool str_Settings, str_MCVRedeploy, 1
+      mov BYTE [0x007E2490], al   
+      
+      SpawnINI_Get_Int str_Settings, str_Credits, 10000
+      mov DWORD [0x007E2470], eax   
+
+      
+     SpawnINI_Get_Int str_Settings, str_GameSpeed, 0
+     mov    dword [0x007E4720], eax
+     
+    mov   DWORD [0x007E245C], 0 ; WOL?
+     
+
+    
+            mov     ecx, 0x07E2458; offset SessionClass_Session
         call    0x005EE7D0
+        
+         ; scenario
+     LEA EAX, [0x007E28B0]
+    SpawnINI_Get_String str_Settings, str_Scenario, str_Empty, EAX, 32
+       
+       SpawnINI_Get_Int str_Settings, str_Seed, 0
+      mov   DWORD [0x007E4934], eax
+      call  0x004E38A0 ; Init_Random()    
       
-      mov   DWORD [0x007E4934], 324324 ; Seed, TODO NEEDS TO BE READ FROM INI
-      call  0x004E38A0 ; Init_Random()
+     
       
-    push  str_gcanyonmap
-      push   0x007E28B0 ; map buffer used by something
-      call   0x006BE630 ; strcpy
-      add     esp, 8 
+
+      
+
+     
+      
+         
+;    push  str_gcanyonmap
+;      push   0x007E28B0 ; map buffer used by something
+;      call   0x006BE630 ; strcpy
+;      add     esp, 8
+      
+
       
     call    Add_Human_Player
     call    Add_Human_Opponents
@@ -163,6 +258,8 @@ Initialize_Spawn:
     mov DWORD [0x007E250C], 15 ; MaxAhead
     MOV DWORD [0x007E2510], 3 ; FrameSendRate
     mov DWORD [0x007E3FA8], 0 ; LatencyFudge
+    mov DWORD [0x007E2514], 60 ; RequestedFPS
+    mov DWORD [0x007E2464], 2   ; ProtocolVersion
 
     call    0x00574F90 ; Init_Network
     
@@ -170,7 +267,7 @@ Initialize_Spawn:
       ;start scenario 
       push   -1 
       xor      edx, edx 
-      mov      ecx, str_gcanyonmap 
+      mov      ecx, 0x007E28B0
       call   0x005DB170 
        
       call   0x00462C60 
@@ -260,19 +357,23 @@ Add_Human_Player:
       lea     ecx, [esi+14h] 
       call   0x004EF040 
        
-      lea      ecx, [esi] 
-      push   str_debugplayer 
-      push   ecx 
-      call   0x006BE630 ; strcpy
        
-      add     esp, 8 
+           LEA EAX, [esi]
+    SpawnINI_Get_String str_Settings, str_Name, str_Empty, EAX, 0x14
+
+;    lea      ecx,  
+;      push   str_debugplayer 
+;      push   ecx 
+;      call   0x006BE630 ; strcpy     
+;      add     esp, 8 
        
        ; Player side
-       mov  eax, 1
+        SpawnINI_Get_Int str_Settings, str_Side, 0
         mov      dword [esi+0x35], eax ; side 
         mov BYTE [0x7E2500], al ; For side specific mix files loading and stuff
 
-        mov      dword [esi+0x39], 3  ; color
+        SpawnINI_Get_Int str_Settings, str_Color, 0
+        mov      dword [esi+0x39], eax  ; color
 
 
       mov      dword [esi+0x41], -1 
