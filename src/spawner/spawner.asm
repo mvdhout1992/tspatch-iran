@@ -71,13 +71,13 @@ Initialize_Spawn:
       add     esp, 8 
       
     call    Add_Human_Player
-;    call    Add_Human_Opponents
-    
+    call    Add_Human_Opponents
     
     ; do networking crap
     
     push    35088h
     call    0x006B51D7 ; operator new(uint)
+    add     esp, 4
     
     mov     ecx, eax
     call    0x006A1E70 ; UDPInterfaceClass::UDPInterfaceClass(void)
@@ -107,8 +107,9 @@ Initialize_Spawn:
     push    1Eh
     call    0x004F05B0 ; IPXManagerClass::Set_Timing(ulong,ulong,ulong)
     
-    mov DWORD [0x007E250C], 15
-    MOV DWORD [0x007E2510], 3
+    mov DWORD [0x007E250C], 15 ; MaxAhead
+    MOV DWORD [0x007E2510], 3 ; FrameSendRate
+    mov DWORD [0x007E3FA8], 0 ; LatencyFudge
 
     call    0x00574F90 ; Init_Network
     
@@ -265,3 +266,4 @@ Add_Human_Opponents:
       mov      ecx, 0x007E3E90 
       call   0x0044D690 
       retn
+    
