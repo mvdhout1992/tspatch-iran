@@ -10,6 +10,8 @@ hp_data:
     .TempPtr RESD 1
     .SpawnerActive RESD 1
     .inet_addr  RESD 1
+    .FileClass_SPAWN  RESB 128
+    .INIClass_SPAWN   RESB 64
     
 [section .text]
 
@@ -24,6 +26,8 @@ endstruc
 @JMP   0x00609470  _Send_Statistics_Packet_RETN_Patch
 @JMP   0x005EEE60  _SessionClass__Free_Scenario_Descriptions_RETN_Patch
 
+; NEED TO ADD SendFix & ReceiveFix
+
 _SessionClass__Free_Scenario_Descriptions_RETN_Patch:
     retn
 
@@ -36,11 +40,46 @@ str_debugplayer2  db "debugplayer2",0
 str_wsock32_dll  db "wsock32.dll",0
 str_inet_addr    db "inet_addr",0
 str_localhost    db "127.0.0.1",0
+str_spawn_ini   db "SPAWN.INI",0
 
 def_port dd 1234
 
-; NEED TO ADD SendFix & ReceiveFix
+; sizes not actually verified
+FileClass_SPAWN  TIMES 128 db 0
+INIClass_SPAWN   TIMES 64 db 0
 
+
+
+Load_SPAWN_INI:
+    ; initialize FileClass
+    push str_spawn_ini
+    MOV ECX, hp_data.FileClass_SPAWN
+    CALL 0x004497B0 ; FileClass__FileClass
+
+        ; check ini exists
+    MOV ECX, hp_data.FileClass_SPAWN
+    XOR EDX, EDX
+    push   EDX
+    CALL 0x004499C0 ; FileClass__Is_Available
+    TEST al, al
+    JE .No_Spawn_INI
+
+    ; initialize INIClass
+    MOV ECX, hp_data.INIClass_SPAWN
+    CALL 0x004DF220 ; INIClass__INIClass
+
+    ; load FileClass to INIClass
+    push 0
+    push hp_data.FileClass_SPAWN
+    MOV ECX, hp_data.INIClass_SPAWN
+    CALL 0x004DB780 ; INIClass__Load
+    
+    mov     eax, 1
+    retn
+    
+.No_Spawn_INI:
+    mov     eax, 0
+    retn
 
 Initialize_Spawn:
 
@@ -49,7 +88,12 @@ Initialize_Spawn:
     
     mov     DWORD [hp_data.SpawnerActive], 1
     
+    call    Load_SPAWN_INI
+     cmp    eax, 0
+    jz      .Exit_Error
+    
     call    Import_int_addr
+    
     
     mov   BYTE [0x007E4580], 1 ; GameActive, needs to be set here or the game gets into an infinite loop trying to create spawning units
 
@@ -181,6 +225,10 @@ Initialize_Spawn:
 .Ret_Exit:
     mov       eax, 0
     retn
+    
+.Exit_Error:
+    MOV EAX,-1
+    retn
 
 _Select_Game_Init_Spawner:
     CALL    Initialize_Spawn
@@ -298,5 +346,4 @@ Import_int_addr:
 
     MOV [hp_data.inet_addr], EAX
     retn
-
 
