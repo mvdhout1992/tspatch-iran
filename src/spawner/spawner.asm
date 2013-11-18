@@ -9,6 +9,7 @@ hp_data:
     .byte RESB 1
     .TempPtr RESD 1
     .SpawnerActive RESD 1
+    .inet_addr  RESD 1
     
 [section .text]
 
@@ -31,6 +32,12 @@ _Send_Statistics_Packet_RETN_Patch:
 
 str_gcanyonmap   db "blitz_test.map", 0 
 str_debugplayer  db "debugplayer",0
+str_debugplayer2  db "debugplayer2",0
+str_wsock32_dll  db "wsock32.dll",0
+str_inet_addr    db "inet_addr",0
+str_localhost    db "127.0.0.1",0
+
+def_port dd 1234
 
 ; NEED TO ADD SendFix & ReceiveFix
 
@@ -42,6 +49,8 @@ Initialize_Spawn:
     
     mov     DWORD [hp_data.SpawnerActive], 1
     
+    call    Import_int_addr
+    
     mov   BYTE [0x007E4580], 1 ; GameActive, needs to be set here or the game gets into an infinite loop trying to create spawning units
 
           ;set session 
@@ -50,7 +59,7 @@ Initialize_Spawn:
       mov      dword [0x007E2480], 2 ; unit count
       mov      dword [0x007026C0], 10 ; tech level
       
-      mov       dword [0x007E2484], 3 ; AI players
+      mov       dword [0x007E2484], 0 ; AI players
       
       mov       dword [0x007E2514], 60 ; RequestedFPS
       
@@ -239,7 +248,7 @@ Add_Human_Opponents:
       call   0x004EF040 
        
       lea      ecx, [esi] 
-      push   str_debugplayer 
+      push   str_debugplayer2 
       push   ecx 
       call   0x006BE630 ; strcpy
        
@@ -252,10 +261,22 @@ Add_Human_Opponents:
      
     mov     eax, 1
     MOV [esi + 0x14 + NetAddress.zero], WORD 0
+    
+    push    str_localhost
+    mov eax, [hp_data.inet_addr]
+    call    eax
+    
     MOV [esi + 0x14 + NetAddress.ip], EAX
+    
+    mov eax, [def_port]
+    AND EAX, 0xFFFF
+
+    PUSH EAX
+    CALL 0x006B4D24 ; htonl
+    
     MOV [esi + 0x14 + NetAddress.port], EAX
 
-        mov      dword [esi+0x39], 3  ; color
+        mov      dword [esi+0x39], 2  ; color
 
 
       mov      dword [esi+0x41], -1 
@@ -267,3 +288,15 @@ Add_Human_Opponents:
       call   0x0044D690 
       retn
     
+Import_int_addr:
+    PUSH str_wsock32_dll
+    CALL [0x006CA16C] ; LoadLibraryA
+
+    PUSH str_inet_addr
+    PUSH EAX
+    CALL [0x006CA174] ; GetProcAddress
+
+    MOV [hp_data.inet_addr], EAX
+    retn
+
+
