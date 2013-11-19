@@ -133,6 +133,12 @@ INIClass_SPAWN   TIMES 64 db 0
     mov     edi, [0x007E155C] ; HouseClassArray
     mov     edi, [edi+%1*4]
     
+;    mov     DWORD [edi+0x10DFC], eax
+;    mov     DWORD [edi+0x6C], eax
+    
+    push    eax
+    call    0x005EEF70 ; Get_MP_Color?
+    
     mov     DWORD [edi+0x10DFC], eax
 
 .Dont_Set_Color_%3:
