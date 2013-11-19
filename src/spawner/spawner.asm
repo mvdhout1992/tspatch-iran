@@ -15,6 +15,8 @@ hp_data:
     .CurrentOpponent RESD 1
     .OtherSection   RESB 128
     .IP_temp    RESB 32
+    .HouseColorsArray RESD 8
+    .HouseCountriesArray RESD 8
     
 [section .text]
 
@@ -51,8 +53,9 @@ endstruc
 %endmacro
 
 
-@JMP   0x004E1DE0  _Select_Game_Init_Spawner
-@JMP   0x00609470  _Send_Statistics_Packet_RETN_Patch ; Games tries to send statistics when match ends which causes crash
+@JMP   0x004E1DE0   _Select_Game_Init_Spawner
+@JMP   0x00609470   _Send_Statistics_Packet_RETN_Patch ; Games tries to send statistics when match ends which causes crash
+@JMP   0x005E08E3   _Read_Scenario_INI_Assign_Houses_And_Spawner_House_Settings
 
 ; NEED TO ADD SendFix & ReceiveFix
 
@@ -95,6 +98,26 @@ str_IP          db"IP",0
 str_SpawnArg    db"-SPAWN",0
 str_MultiEngineer db"MultiEngineer",0
 str_Firestorm   db"Firestorm",0
+str_HouseColors db"HouseColors",0
+str_HouseCountries db"HouseCountries",0
+
+str_Multi1      db"Multi1",0
+str_Multi2      db"Multi2",0
+str_Multi3      db"Multi3",0
+str_Multi4      db"Multi4",0
+str_Multi5      db"Multi5",0
+str_Multi6      db"Multi6",0
+str_Multi7      db"Multi7",0
+str_Multi8      db"Multi8",0
+
+str_Multi1_Alliances db"Multi1_Alliances",0
+str_Multi2_Alliances db"Multi2_Alliances",0
+str_Multi3_Alliances db"Multi3_Alliances",0
+str_Multi4_Alliances db"Multi4_Alliances",0
+str_Multi5_Alliances db"Multi5_Alliances",0
+str_Multi6_Alliances db"Multi6_Alliances",0
+str_Multi7_Alliances db"Multi7_Alliances",0
+str_Multi8_Alliances db"Multi8_Alliances",0
 
 def_port dd 1234
 
@@ -102,8 +125,201 @@ def_port dd 1234
 FileClass_SPAWN  TIMES 128 db 0
 INIClass_SPAWN   TIMES 64 db 0
 
+; args <House number>, <ColorType>
+%macro Set_House_Color 3
+    mov     eax, %2
+    cmp     eax, -1
+    jz      .Dont_Set_Color_%3
+    mov     edi, [0x007E155C] ; HouseClassArray
+    mov     edi, [edi+%1*4]
+    
+    mov     DWORD [edi+0x10DFC], eax
+
+.Dont_Set_Color_%3:
+%endmacro
+
+; args <House number>, <HouseType>
+%macro Set_House_Country 3
+    mov     eax, %2
+    cmp     eax, -1
+    jz      .Dont_Set_Country_%3
+    mov     edi, [0x007E155C] ; HouseClassArray
+    mov     edi, [edi+%1*4]
+    
+    mov     ecx, [0x007E21D4] ; HouseTypesArray?
+    mov     eax, [ecx+eax*4]
+    
+    mov     DWORD [edi+24h], eax
+
+.Dont_Set_Country_%3:
+%endmacro
+
+; args <House number>, <House number to ally>
+%macro House_Make_Ally 3
+    mov     eax, %2
+    cmp     eax, -1
+    jz      .Dont_Make_Ally_%3
+    mov     esi, [0x007E155C] ; HouseClassArray
+    mov     edi, [esi+4*%1]
+    
+    push    eax
+    mov     ecx, edi
+   call    0x004BDB30 ; void HouseClass::Make_Ally(HousesType)
+
+.Dont_Make_Ally_%3:
+%endmacro
+
+; args <string of section to load from>, <House number which will ally>
+%macro  House_Make_Allies_Spawner 3
+    SpawnINI_Get_Bool %1, str_Multi1, 0
+    cmp     al, 0
+    jz      .Dont_Ally_Multi1_%3
+    House_Make_Ally %2, 0, a%3
+    
+.Dont_Ally_Multi1_%3:
+
+    SpawnINI_Get_Bool %1, str_Multi2, 0
+    cmp     al, 0
+    jz      .Dont_Ally_Multi2_%3
+    House_Make_Ally %2, 1, b%3
+    
+.Dont_Ally_Multi2_%3:
+
+    SpawnINI_Get_Bool %1, str_Multi3, 0
+    cmp     al, 0
+    jz      .Dont_Ally_Multi3_%3
+    House_Make_Ally %2, 2, c%3
+    
+.Dont_Ally_Multi3_%3:
+
+    SpawnINI_Get_Bool %1, str_Multi4, 0
+    cmp     al, 0
+    jz      .Dont_Ally_Multi4_%3
+    House_Make_Ally %2, 3, d%3
+    
+.Dont_Ally_Multi4_%3:
+
+    SpawnINI_Get_Bool %1, str_Multi5, 0
+    cmp     al, 0
+    jz      .Dont_Ally_Multi5_%3
+    House_Make_Ally %2, 4, e%3
+    
+.Dont_Ally_Multi5_%3:
+
+    SpawnINI_Get_Bool %1, str_Multi6, 0
+    cmp     al, 0
+    jz      .Dont_Ally_Multi6_%3
+    House_Make_Ally %2, 5, f%3
+    
+.Dont_Ally_Multi6_%3:
+
+    SpawnINI_Get_Bool %1, str_Multi7, 0
+    cmp     al, 0
+    jz      .Dont_Ally_Multi7_%3
+    House_Make_Ally %2, 6, g%3
+    
+.Dont_Ally_Multi7_%3:
+
+    SpawnINI_Get_Bool %1, str_Multi8, 0
+    cmp     al, 0
+    jz      .Dont_Ally_Multi8_%3
+    House_Make_Ally %2, 7, h%3
+    
+.Dont_Ally_Multi8_%3:
+
+%endmacro
+
+Load_House_Countries_Spawner:
+    SpawnINI_Get_Int str_HouseCountries, str_Multi1, -1
+    mov     DWORD [hp_data.HouseCountriesArray+0], eax
+    
+    SpawnINI_Get_Int str_HouseCountries, str_Multi2, -1
+    mov     DWORD [hp_data.HouseCountriesArray+4], eax
+    
+    SpawnINI_Get_Int str_HouseCountries, str_Multi3, -1
+    mov     DWORD [hp_data.HouseCountriesArray+8], eax
+      
+    SpawnINI_Get_Int str_HouseCountries, str_Multi4, -1
+    mov     DWORD [hp_data.HouseCountriesArray+12], eax
+    
+    SpawnINI_Get_Int str_HouseCountries, str_Multi5, -1
+    mov     DWORD [hp_data.HouseCountriesArray+16], eax
+    
+    SpawnINI_Get_Int str_HouseCountries, str_Multi6, -1
+    mov     DWORD [hp_data.HouseCountriesArray+20], eax
+    
+    SpawnINI_Get_Int str_HouseCountries, str_Multi7, -1
+    mov     DWORD [hp_data.HouseCountriesArray+24], eax
+    
+    SpawnINI_Get_Int str_HouseCountries, str_Multi8, -1
+    mov     DWORD [hp_data.HouseCountriesArray+28], eax
+    
+   retn
+
+Load_House_Colors_Spawner:
+    SpawnINI_Get_Int str_HouseColors, str_Multi1, -1
+    mov     DWORD [hp_data.HouseColorsArray+0], eax
+    
+    SpawnINI_Get_Int str_HouseColors, str_Multi2, -1
+    mov     DWORD [hp_data.HouseColorsArray+4], eax
+    
+    SpawnINI_Get_Int str_HouseColors, str_Multi3, -1
+    mov     DWORD [hp_data.HouseColorsArray+8], eax
+      
+    SpawnINI_Get_Int str_HouseColors, str_Multi4, -1
+    mov     DWORD [hp_data.HouseColorsArray+12], eax
+    
+    SpawnINI_Get_Int str_HouseColors, str_Multi5, -1
+    mov     DWORD [hp_data.HouseColorsArray+16], eax
+    
+    SpawnINI_Get_Int str_HouseColors, str_Multi6, -1
+    mov     DWORD [hp_data.HouseColorsArray+20], eax
+    
+    SpawnINI_Get_Int str_HouseColors, str_Multi7, -1
+    mov     DWORD [hp_data.HouseColorsArray+24], eax
+    
+    SpawnINI_Get_Int str_HouseColors, str_Multi8, -1
+    mov     DWORD [hp_data.HouseColorsArray+28], eax
+    
+   retn
+
+_Read_Scenario_INI_Assign_Houses_And_Spawner_House_Settings:
+    pushad
+    call    0x005DE210 ; Assign_Houses(void)
+    
+    Set_House_Color 0, DWORD [hp_data.HouseColorsArray+0], a
+    Set_House_Color 1, DWORD [hp_data.HouseColorsArray+4], b
+    Set_House_Color 2, DWORD [hp_data.HouseColorsArray+8], c
+    Set_House_Color 3, DWORD [hp_data.HouseColorsArray+12], d
+    Set_House_Color 4, DWORD [hp_data.HouseColorsArray+16], e
+    Set_House_Color 6, DWORD [hp_data.HouseColorsArray+20], f
+    Set_House_Color 7, DWORD [hp_data.HouseColorsArray+24], g
+    Set_House_Color 8, DWORD [hp_data.HouseColorsArray+28], h
+    
+    Set_House_Country 0, DWORD [hp_data.HouseCountriesArray+0], a
+    Set_House_Country 1, DWORD [hp_data.HouseCountriesArray+4], b
+    Set_House_Country 2, DWORD [hp_data.HouseCountriesArray+8], c
+    Set_House_Country 3, DWORD [hp_data.HouseCountriesArray+12], d
+    Set_House_Country 4, DWORD [hp_data.HouseCountriesArray+16], e
+    Set_House_Country 6, DWORD [hp_data.HouseCountriesArray+20], f
+    Set_House_Country 7, DWORD [hp_data.HouseCountriesArray+24], g
+    Set_House_Country 8, DWORD [hp_data.HouseCountriesArray+28], h
+    
+    House_Make_Allies_Spawner str_Multi1_Alliances, 0, a
+    House_Make_Allies_Spawner str_Multi2_Alliances, 1, b
+    House_Make_Allies_Spawner str_Multi3_Alliances, 2, c
+    House_Make_Allies_Spawner str_Multi4_Alliances, 3, d
+    House_Make_Allies_Spawner str_Multi5_Alliances, 4, e
+    House_Make_Allies_Spawner str_Multi6_Alliances, 5, f
+    House_Make_Allies_Spawner str_Multi7_Alliances, 6, g
+    House_Make_Allies_Spawner str_Multi8_Alliances, 7, h
+   
+.Ret:   
+    popad
+    jmp     0x005E08E8
 
 
+    
 Load_SPAWN_INI:
     ; initialize FileClass
     push str_spawn_ini
@@ -158,6 +374,9 @@ Initialize_Spawn:
     jz      .Exit_Error
     
     call    Import_int_addr
+    
+    call    Load_House_Colors_Spawner
+    call    Load_House_Countries_Spawner
     
     
     mov   BYTE [0x007E4580], 1 ; GameActive, needs to be set here or the game gets into an infinite loop trying to create spawning units
