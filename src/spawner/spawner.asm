@@ -54,7 +54,7 @@ endstruc
 
 
 @JMP   0x004E1DE0   _Select_Game_Init_Spawner
-@JMP   0x00609470   _Send_Statistics_Packet_RETN_Patch ; Games tries to send statistics when match ends which causes crash
+@JMP   0x00609470   _Send_Statistics_Packet_Return_If_Spawner_Active ; Games tries to send statistics when match ends which causes crash
 @JMP   0x005E08E3   _Read_Scenario_INI_Assign_Houses_And_Spawner_House_Settings
 
 ; NEED TO ADD SendFix & ReceiveFix
@@ -62,7 +62,14 @@ endstruc
 _SessionClass__Free_Scenario_Descriptions_RETN_Patch:
     retn
 
-_Send_Statistics_Packet_RETN_Patch:
+_Send_Statistics_Packet_Return_If_Spawner_Active:
+    cmp     DWORD [hp_data.SpawnerActive], 1
+    jz      .Ret
+
+    sub     esp, 374h
+    jmp     0x00609476
+    
+.Ret:
     retn
 
 str_gcanyonmap   db "blitz_test.map", 0 
