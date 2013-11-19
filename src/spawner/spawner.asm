@@ -94,6 +94,7 @@ str_Port        db"Port",0
 str_IP          db"IP",0
 str_SpawnArg    db"-SPAWN",0
 str_MultiEngineer db"MultiEngineer",0
+str_Firestorm   db"Firestorm",0
 
 def_port dd 1234
 
@@ -210,9 +211,17 @@ Initialize_Spawn:
      mov    BYTE [0x007E247C], al
      
      
-
+    SpawnINI_Get_Bool str_Settings, str_Firestorm, 0
     
-            mov     ecx, 0x07E2458; offset SessionClass_Session
+    cmp     al, 0
+    jz      .No_Firestorm
+    
+    mov     DWORD [0x006F2638], 3
+    mov     DWORD [0x006F263C], 3
+    
+.No_Firestorm:
+    
+        mov     ecx, 0x07E2458; offset SessionClass_Session
         call    0x005EE7D0
         
          ; scenario
