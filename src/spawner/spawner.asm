@@ -17,6 +17,7 @@ hp_data:
     .IP_temp    RESB 32
     .HouseColorsArray RESD 8
     .HouseCountriesArray RESD 8
+    .HouseHandicapsArray RESD 8
     
 [section .text]
 
@@ -107,6 +108,7 @@ str_MultiEngineer db"MultiEngineer",0
 str_Firestorm   db"Firestorm",0
 str_HouseColors db"HouseColors",0
 str_HouseCountries db"HouseCountries",0
+str_HouseHandicaps db"HouseHandicaps",0
 
 str_Multi1      db"Multi1",0
 str_Multi2      db"Multi2",0
@@ -165,6 +167,23 @@ INIClass_SPAWN   TIMES 64 db 0
     mov     DWORD [edi+24h], eax
 
 .Dont_Set_Country_%3:
+%endmacro
+
+
+
+; args <House number>, <DifficultyType>
+%macro Set_House_Handicap 3
+    mov     eax, %2
+    cmp     eax, -1
+    jz      .Dont_Set_Handicap_%3
+    mov     edi, [0x007E155C] ; HouseClassArray
+    mov     edi, [edi+%1*4]
+    
+    push    eax
+    mov     ecx, edi
+    call    0x004BB460 ; DiffType HouseClass::Assign_Handicap(DiffType)
+
+.Dont_Set_Handicap_%3:
 %endmacro
 
 ; args <House number>, <House number to ally>
@@ -296,6 +315,33 @@ Load_House_Colors_Spawner:
     
    retn
 
+Load_House_Handicaps_Spawner:
+    SpawnINI_Get_Int str_HouseHandicaps, str_Multi1, -1
+    mov     DWORD [hp_data.HouseHandicapsArray+0], eax
+   
+    SpawnINI_Get_Int str_HouseHandicaps, str_Multi2, -1
+    mov     DWORD [hp_data.HouseHandicapsArray+4], eax
+   
+    SpawnINI_Get_Int str_HouseHandicaps, str_Multi3, -1
+    mov     DWORD [hp_data.HouseHandicapsArray+8], eax
+    
+    SpawnINI_Get_Int str_HouseHandicaps, str_Multi4, -1
+    mov     DWORD [hp_data.HouseHandicapsArray+12], eax
+    
+    SpawnINI_Get_Int str_HouseHandicaps, str_Multi5, -1
+    mov     DWORD [hp_data.HouseHandicapsArray+16], eax
+    
+    SpawnINI_Get_Int str_HouseHandicaps, str_Multi6, -1
+    mov     DWORD [hp_data.HouseHandicapsArray+20], eax
+    
+    SpawnINI_Get_Int str_HouseHandicaps, str_Multi7, -1
+    mov     DWORD [hp_data.HouseHandicapsArray+24], eax
+    
+    SpawnINI_Get_Int str_HouseHandicaps, str_Multi8, -1
+    mov     DWORD [hp_data.HouseHandicapsArray+28], eax
+   
+    retn
+   
 _Read_Scenario_INI_Assign_Houses_And_Spawner_House_Settings:
     pushad
     call    0x005DE210 ; Assign_Houses(void)
@@ -326,6 +372,15 @@ _Read_Scenario_INI_Assign_Houses_And_Spawner_House_Settings:
     House_Make_Allies_Spawner str_Multi6_Alliances, 5, f
     House_Make_Allies_Spawner str_Multi7_Alliances, 6, g
     House_Make_Allies_Spawner str_Multi8_Alliances, 7, h
+    
+    Set_House_Handicap  0, DWORD [hp_data.HouseHandicapsArray+0], a
+    Set_House_Handicap  1, DWORD [hp_data.HouseHandicapsArray+4], b
+    Set_House_Handicap  2, DWORD [hp_data.HouseHandicapsArray+8], c
+    Set_House_Handicap  3, DWORD [hp_data.HouseHandicapsArray+12], d
+    Set_House_Handicap  4, DWORD [hp_data.HouseHandicapsArray+16], e
+    Set_House_Handicap  5, DWORD [hp_data.HouseHandicapsArray+20], f
+    Set_House_Handicap  6, DWORD [hp_data.HouseHandicapsArray+24], g
+    Set_House_Handicap  7, DWORD [hp_data.HouseHandicapsArray+28], h
    
 .Ret:   
     popad
@@ -390,6 +445,7 @@ Initialize_Spawn:
     
     call    Load_House_Colors_Spawner
     call    Load_House_Countries_Spawner
+    call    Load_House_Handicaps_Spawner
     
     
     mov   BYTE [0x007E4580], 1 ; GameActive, needs to be set here or the game gets into an infinite loop trying to create spawning units
@@ -464,14 +520,7 @@ Initialize_Spawn:
       mov   DWORD [0x007E4934], eax
       call  0x004E38A0 ; Init_Random()    
       
-     
-      
-
-      
-
-     
-      
-         
+        
 ;    push  str_gcanyonmap
 ;      push   0x007E28B0 ; map buffer used by something
 ;      call   0x006BE630 ; strcpy
