@@ -490,7 +490,7 @@ Initialize_Spawn:
       mov DWORD [0x007E2470], eax   
 
     SpawnINI_Get_Int str_Settings, str_Port, 1234
-      mov DWORD [0x0070FCF0], eax   
+      mov WORD [0x0070FCF0], ax   
       
      SpawnINI_Get_Int str_Settings, str_GameSpeed, 0
      mov    dword [0x007E4720], eax
@@ -515,10 +515,6 @@ Initialize_Spawn:
          ; scenario
      LEA EAX, [0x007E28B8]
     SpawnINI_Get_String str_Settings, str_Scenario, str_Empty, EAX, 32
-       
-       SpawnINI_Get_Int str_Settings, str_Seed, 0
-      mov   DWORD [0x007E4934], eax
-      call  0x004E38A0 ; Init_Random()    
       
         
 ;    push  str_gcanyonmap
@@ -530,6 +526,12 @@ Initialize_Spawn:
       
     call    Add_Human_Player
     call    Add_Human_Opponents
+        
+    ; Needs to be done after SessionClass is set, or the seed value will be overwritten
+    ; inside the Init_Random() call (if sessiontype == SKIRMISH)
+    SpawnINI_Get_Int str_Settings, str_Seed, 0
+      mov   DWORD [0x007E4934], eax
+      call  0x004E38A0 ; Init_Random()    
     
     ; do networking crap
     
@@ -562,7 +564,7 @@ Initialize_Spawn:
     push    1
     push    258h
     push    0FFFFFFFFh
-    push    1Eh
+    push    3Ch
     call    0x004F05B0 ; IPXManagerClass::Set_Timing(ulong,ulong,ulong)
     
     mov DWORD [0x007E250C], 15 ; MaxAhead
@@ -573,12 +575,24 @@ Initialize_Spawn:
 
     call    0x00574F90 ; Init_Network
     
-
+    mov     DWORD eax, [0x007E3EA0] ; NameNodes_CurrentSize
+    mov     DWORD [0x007E2508], eax ; HumanPlayers?
+    
       ;start scenario 
       push   -1 
       xor      edx, edx 
       mov      ecx, 0x007E28B8
-      call   0x005DB170 
+      call   0x005DB170
+      
+      mov     ecx, 0x07E2458; offset SessionClass_Session
+      call  0x005ED510 ; int SessionClass::Create_Connections(void)
+      
+    mov     ecx, 0x007E45A0 ; offset IPXManagerClass Ipx
+    push    1
+    push    258h
+    push    0FFFFFFFFh
+    push    3Ch
+    call    0x004F05B0 ; IPXManagerClass::Set_Timing(ulong,ulong,ulong)
        
       call   0x00462C60 
        
@@ -786,7 +800,7 @@ Add_Human_Opponents:
     
     MOV [esi + 0x14 + NetAddress.port], EAX
 
-        mov      dword [esi+0x39], 2  ; color
+
 
 
       mov      dword [esi+0x41], -1 
