@@ -567,8 +567,9 @@ Initialize_Spawn:
     push    3Ch
     call    0x004F05B0 ; IPXManagerClass::Set_Timing(ulong,ulong,ulong)
     
-    mov DWORD [0x007E250C], 15 ; MaxAhead
-    MOV DWORD [0x007E2510], 3 ; FrameSendRate
+    mov DWORD [0x007E250C], 3 ; MaxAhead
+    mov DWORD [0x007E2524], 3 ; MaxMaxAhead
+    MOV DWORD [0x007E2510], 1 ; FrameSendRate
     mov DWORD [0x007E3FA8], 0 ; LatencyFudge
     mov DWORD [0x007E2514], 60 ; RequestedFPS
     mov DWORD [0x007E2464], 2   ; ProtocolVersion
