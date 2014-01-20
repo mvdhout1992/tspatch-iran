@@ -1,4 +1,9 @@
-tspatch-iran
-============
+Tiberian Sun patch
+==================
 
-Random patches I'm doing for Tiberian Sun
+Random patches and CnCNet 5 spawner.
+
+Authors
+-------
+ - iran - most of the work
+ - hifi - nethack and tunneling

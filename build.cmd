@@ -1,3 +1,3 @@
 copy Game.dat Game.exe
-::tools\petool.exe dta.exe add .patch rwxci 131072
-tools\linker.exe src\main.asm src\main.inc Game.exe tools\nasm.exe -I./include/
+tools\linker.exe src\data.asm src\data.inc Game.exe tools\nasm.exe
+tools\linker.exe src\code.asm src\code.inc Game.exe tools\nasm.exe
