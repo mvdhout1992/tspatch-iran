@@ -1,5 +1,5 @@
-@JMP 0x005D6B92 _Load_Game_Post_Load_Game_Hook
-@JMP 0x005D4FF5 _Save_Game_Pre_Save_Game_Hook
+;@JMP 0x005D6B92 _Load_Game_Post_Load_Game_Hook
+;@JMP 0x005D4FF5 _Save_Game_Pre_Save_Game_Hook
 
 _Save_Game_Pre_Save_Game_Hook:
     mov eax, [var.Anticheat1]
