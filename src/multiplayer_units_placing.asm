@@ -4,8 +4,32 @@
 @JMP 0x006585C0 _UnitClass__Read_INI_SpawnX_Get_UnitClassArray_Count_In_Prologue
 @JMP 0x006589C8 _UnitClass__Read_INI_SpawnX_Fix_UnitClassArray_Loop_Condition
 ;@JMP 0x005DD92A _Read_Scenario_INI_Dont_Load_Custom_Houses_List_In_Multiplayer
-
 @JMP 0x0043485F 0x00434874 ; jump past check in BuildingClass::Read_INI() preventing multiplayer building spawning for player
+@JMP 0x006589ED _UnitClass__Read_INI_SpawnX_Fix_Up_LinkedTo_UnitClassArray_Index
+@JMP 0x00658A05 _UnitClass__Read_INI_SpawnX_Fix_UnitClassArray_Loop_Condition2
+@JMP 0x006589E1 _UnitClass__Read_INI_SpawnX_Fix_Up_LinkedTo_UnitClassArray_Index2
+
+_UnitClass__Read_INI_SpawnX_Fix_Up_LinkedTo_UnitClassArray_Index2:
+    mov edx, ecx
+    add edx, [var.OldUnitClassArrayCount]
+    mov edx, [esi+edx*4]
+    cmp eax, 0FFFFFFFFh
+    jmp 0x006589E7
+
+_UnitClass__Read_INI_SpawnX_Fix_UnitClassArray_Loop_Condition2:
+    mov edi, [UnitClassArray_Count]
+    sub edi, [var.OldUnitClassArrayCount]
+    jmp 0x00658A0B
+
+
+; Need to add OldArrayCount to the current index stored in EAX
+_UnitClass__Read_INI_SpawnX_Fix_Up_LinkedTo_UnitClassArray_Index:
+    add eax, [var.OldUnitClassArrayCount]
+    mov eax, [esi+eax*4]
+    mov [edx+364h], eax ; LinkedTo?
+    jmp 0x006589F6
+
+
 
 ;_Read_Scenario_INI_Dont_Load_Custom_Houses_List_In_Multiplayer:
 ;    cmp dword [SessionType], 0
@@ -20,7 +44,7 @@
 _UnitClass__Read_INI_SpawnX_Fix_UnitClassArray_Loop_Condition:
     mov edi, [UnitClassArray_Count]
     sub edi, [var.OldUnitClassArrayCount]
-    jmp 0x00658A0B
+    jmp 0x006589CE
     
 _UnitClass__Read_INI_SpawnX_Get_UnitClassArray_Count_In_Prologue:
     push eax
