@@ -58,6 +58,19 @@
 
 @JMP 0x0065860D _UnitClass__Read_INI_Jump_Out_When_Units_Section_Missing
 
+@JMP 0x005DBCC3 _Read_Scenario_Custom_Load_Screen_Spawner
+
+_Read_Scenario_Custom_Load_Screen_Spawner:
+
+    cmp BYTE [var.CustomLoadScreen], 0
+    jz .Ret
+    
+    mov esi, var.CustomLoadScreen
+
+.Ret:
+    push 40590000h
+    jmp 0x005DBCC8
+
 _UnitClass__Read_INI_Jump_Out_When_Units_Section_Missing:
     cmp eax, ebx
     jle .Jump_Out
@@ -652,6 +665,9 @@ Initialize_Spawn:
     SpawnINI_Get_Bool str_Settings, str_MultiEngineer, 0
     mov byte [MultiEngineer], al
          
+    lea eax, [var.CustomLoadScreen]
+    SpawnINI_Get_String str_Settings, str_CustomLoadScreen, str_Empty, eax, 256
+    
     ; tunnel ip
     lea eax, [TempBuf]
     SpawnINI_Get_String str_Tunnel, str_Ip, str_Empty, eax, 32

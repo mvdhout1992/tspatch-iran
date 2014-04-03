@@ -19,6 +19,7 @@ retn ; For some reason the game executes the first function found in the extende
 ;fixes
 %include "src/fix_wce_errors.asm"
 %include "src/alt_scout_fix.asm"
+%include "src/aircraft_passenger_fix.asm"
 
 ; spawner
 %include "src/spawner.asm"
