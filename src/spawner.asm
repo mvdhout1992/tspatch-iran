@@ -55,10 +55,35 @@
 
 @JMP 0x005DDAF1 _Read_Scenario_INI_Dont_Create_Units_Earlier
 @JMP 0x005DDEDD _Read_Scenario_INI_Dont_Create_Units_Earlier_Dont_Create_Twice
-
 @JMP 0x0065860D _UnitClass__Read_INI_Jump_Out_When_Units_Section_Missing
-
 @JMP 0x005DBCC3 _Read_Scenario_Custom_Load_Screen_Spawner
+@JMP 0x005DD523 _Read_Scenario_INI_Fix_Spawner_DifficultyMode_Setting
+
+_Read_Scenario_INI_Fix_Spawner_DifficultyMode_Setting:
+    cmp dword [var.IsSpawnArgPresent], 0
+    jz  .Ret
+    
+    cmp dword [SessionType], 0
+    jnz .Ret
+
+    pushad
+
+    SpawnINI_Get_Int str_Settings, str_DifficultyMode1, 1
+    push eax
+    
+    SpawnINI_Get_Int str_Settings, str_DifficultyMode2, 1
+    
+    pop edx
+    mov ebx, [ScenarioStuff]
+    
+    mov dword [ebx+0x60C], edx ; DifficultyMode1
+    mov dword [ebx+0x608], eax ; DifficultyMode2
+    
+    popad
+
+.Ret:
+    mov eax, [ScenarioStuff]
+    jmp 0x005DD528
 
 _Read_Scenario_Custom_Load_Screen_Spawner:
 
@@ -728,18 +753,7 @@ Initialize_Spawn:
     jz .Not_Single_Player
     
     mov dword [SessionType], 0 ; single player
-    
-    SpawnINI_Get_Int str_Settings, str_DifficultyMode1, 1
-    push eax
-    
-    SpawnINI_Get_Int str_Settings, str_DifficultyMode2, 1
-    
-    pop edx
-    mov ebx, [ScenarioStuff]
-    
-    mov dword [ebx+0x60C], edx ; DifficultyMode1
-    mov dword [ebx+0x608], eax ; DifficultyMode2
-   
+       
 .Not_Single_Player:
         
     ; Needs to be done after SessionClass is set, or the seed value will be overwritten
