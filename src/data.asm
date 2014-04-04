@@ -47,8 +47,8 @@ str_SidebarHack     db "SidebarHack",0
 str_BuildOffAlly    db "BuildOffAlly",0
 str_CustomLoadScreen db "CustomLoadScreen",0
 
-str_DifficultyMode1 db "DifficultyMode1",0
-str_DifficultyMode2 db "DifficultyMode2",0
+str_DifficultyModeComputer db "DifficultyModeComputer",0
+str_DifficultyModeHuman db "DifficultyModeHuman",0
 
 str_Multi1          db "Multi1",0
 str_Multi2          db "Multi2",0

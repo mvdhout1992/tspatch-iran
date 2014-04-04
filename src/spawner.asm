@@ -68,16 +68,16 @@ _Read_Scenario_INI_Fix_Spawner_DifficultyMode_Setting:
 
     pushad
 
-    SpawnINI_Get_Int str_Settings, str_DifficultyMode1, 1
+    SpawnINI_Get_Int str_Settings, str_DifficultyModeComputer, 1
     push eax
     
-    SpawnINI_Get_Int str_Settings, str_DifficultyMode2, 1
+    SpawnINI_Get_Int str_Settings, str_DifficultyModeHuman, 1
     
     pop edx
     mov ebx, [ScenarioStuff]
     
-    mov dword [ebx+0x60C], edx ; DifficultyMode1
-    mov dword [ebx+0x608], eax ; DifficultyMode2
+    mov dword [ebx+0x60C], edx ; DifficultyModeComputer
+    mov dword [ebx+0x608], eax ; DifficultyModeHuman
     
     popad
 
