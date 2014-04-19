@@ -829,12 +829,28 @@ Initialize_Spawn:
    
 .Dont_Load_Savegame:
 
-    ; start scenario 
+    ; need to supply different args to Start_Scenario() for single player
+    cmp dword [SessionType], 0
+    jnz .Start_Scenario_NOT_Singleplayer
+
+    ; start scenario for singleplayer
+    push 0
+    mov edx, 1
+    mov ecx, ScenarioName
+    call Start_Scenario
+    
+    jmp .Past_Start_Scenario
+    
+.Start_Scenario_NOT_Singleplayer:
+    
+    ; start scenario for multiplayer
     push -1 
     xor edx, edx 
     mov ecx, ScenarioName
     call Start_Scenario
 
+.Past_Start_Scenario:    
+    
     ; modify some RulesClass (RULES.INI stuff) settings
     mov esi, [0x0074C488] ; RulesClass pointer
 
