@@ -35,7 +35,8 @@ var:
     .SpectatorStuffInit         RESB 1
     .OldUnitClassArrayCount     RESD 1
     
-    .CustomLoadScreen            RESB 256
+    .CustomLoadScreen           RESB 256
     
+    .SaveGameLoadPath           RESB 256
 
 [section .text]
