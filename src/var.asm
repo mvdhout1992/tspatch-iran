@@ -37,6 +37,7 @@ var:
     
     .CustomLoadScreen           RESB 256
     
+    .SaveGameLoadPathWide       RESB 512
     .SaveGameLoadPath           RESB 256
 
 [section .text]
