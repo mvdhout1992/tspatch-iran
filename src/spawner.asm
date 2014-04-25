@@ -1023,6 +1023,8 @@ Add_Human_Player:
 .Past_AL_Invert:
 .Sidebar_Hack:     
     mov byte [0x7E2500], al ; For side specific mix files loading and stuff, without sidebar and speech hack
+    mov ebx, [ScenarioStuff]
+    mov byte [ebx+1D91h], al
 
     SpawnINI_Get_Int str_Settings, str_Color, 0
     mov dword [esi+0x39], eax  ; color
