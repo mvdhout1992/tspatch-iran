@@ -114,6 +114,7 @@
 %define NameNodeVector_Add                          0x0044D690
 %define SessionClass__Read_Scenario_Descriptions    0x005EE7D0
 %define ScenarioStuff                               0x007E2438
+%define SelectedDifficulty                          0x007E4724
 
 ; Save games
 %define Load_Game                                   0x005D6910

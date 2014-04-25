@@ -78,10 +78,13 @@ _Read_Scenario_INI_Fix_Spawner_DifficultyMode_Setting:
     
     mov dword [ebx+0x60C], edx ; DifficultyModeComputer
     mov dword [ebx+0x608], eax ; DifficultyModeHuman
+    mov dword [SelectedDifficulty], eax
     
     popad
 
 .Ret:
+    mov eax, dword [SelectedDifficulty]
+    mov dword [0x7a2f0c], eax
     mov eax, [ScenarioStuff]
     jmp 0x005DD528
 
