@@ -33,6 +33,7 @@ retn ; For some reason the game executes the first function found in the extende
 %include "src/anticheat_test.asm"
 
 ; other
+%include "src/briefing_restate_map_file.asm"
 %include "src/dta_hacks.asm"
 %include "src/no-cd.asm"
 %include "src/display_messages_typed_by_yourself.asm"
