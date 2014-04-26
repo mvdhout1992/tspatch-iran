@@ -109,6 +109,7 @@ str_NoCD db"NoCD",0
 str_SaveGameLoadFolder      db"Saved Games\%s",0,0,0,0,0,0,0,0
 str_SaveGameFolderFormat    db"Saved Games\*.%3s",0
 str_SaveGameFolderFormat2   db"Saved Games\SAVE%04lX.%3s",0 
+str_SaveGamesFolder        db"Saved Games",0
 
 _2Bin:               INCBIN "res/2.bin"
 _1Bin:               INCBIN "res/1.bin"

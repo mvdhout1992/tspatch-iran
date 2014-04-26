@@ -23,11 +23,20 @@ _Delete_Save_Game_Game_Folder_Format_String_Change:
     mov     eax, var.SaveGameLoadPath
     push    eax
     jmp     0x00505A25
+    
 
 _Save_Game_Save_Game_Folder_Format_String_Change1:
     lea     eax, [esp+0x2C]
 
     pushad
+    
+    push    str_SaveGamesFolder
+    push    esi
+    call    stristr_
+    add     esp, 8
+    
+    cmp     eax, 0
+    jnz     .No_Change
      
     push    esi
     push    str_SaveGameLoadFolder
@@ -38,6 +47,11 @@ _Save_Game_Save_Game_Folder_Format_String_Change1:
     popad
     
     mov     esi, var.SaveGameLoadPathWide  
+    xor     edi, edi
+    jmp     0x005D5003
+    
+.No_Change:
+    popad
     xor     edi, edi
     jmp     0x005D5003
 
