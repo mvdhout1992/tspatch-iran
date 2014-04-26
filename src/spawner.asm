@@ -35,7 +35,7 @@
 %endmacro
 
 @JMP 0x004E1DE0 _Select_Game_Init_Spawner
-;@JMP 0x00609470 _Send_Statistics_Packet_Return_If_Spawner_Active ; Games tries to send statistics when match ends which causes crash
+@JMP 0x00609470 _Send_Statistics_Packet_Return_If_Skirmish
 @JMP 0x005E08E3 _Read_Scenario_INI_Assign_Houses_And_Spawner_House_Settings
 @JMP 0x004BDDB1 _HouseClass__Make_Ally_STFU_when_Allying_In_Loading_Screen_Spawner
 @JMP 0x004E078C _Init_Game_Check_Spawn_Arg_No_Intro
@@ -227,15 +227,15 @@ _HouseClass__Make_Ally_STFU_when_Allying_In_Loading_Screen_Spawner:
 _SessionClass__Free_Scenario_Descriptions_RETN_Patch:
     retn   
 
-_Send_Statistics_Packet_Return_If_Spawner_Active:
-    cmp dword [var.SpawnerActive], 1
+_Send_Statistics_Packet_Return_If_Skirmish:
+    cmp dword [SessionType], 5
     jz .ret
 
     sub esp, 374h
     jmp 0x00609476
     
 .ret:
-    retn
+    jmp 0x0060A80A ; jump to retn statement
 
 ; args <House number>, <ColorType>
 %macro Set_House_Color 3
