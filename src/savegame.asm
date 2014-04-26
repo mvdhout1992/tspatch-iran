@@ -4,6 +4,10 @@
 _Save_Game_Pre_Save_Game_Hook:
     mov eax, [var.Anticheat1]
     mov [0x00749800], eax
+ 
+    mov byte bl, [0x007E2500]
+    mov eax, [ScenarioStuff]
+    mov byte [eax+0x1D91], bl
      
 ;    push (StripClass_Size * 2)
 ;    push var.AntiCheatArray
@@ -17,6 +21,10 @@ _Save_Game_Pre_Save_Game_Hook:
 _Load_Game_Post_Load_Game_Hook:
     mov eax, [0x00749800]
     mov [var.Anticheat1], eax
+    
+    mov eax, [ScenarioStuff]
+    mov al, byte [eax+0x1D91]
+    mov byte [0x007E2500], al
 
     push (StripClass_Size * 2)
     push LEFT_STRIP
