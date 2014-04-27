@@ -3,3 +3,6 @@ spawn.bat
 /src/*.inc
 # patched executables
 /*.exe
+
+# original game files to be patched
+/*.dat
