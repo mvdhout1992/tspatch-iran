@@ -89,14 +89,15 @@ _sub_4C9560_Spectator_Stuff:
 
 _BuildingClass__Visual_Character_Spectator_Stuff:
     mov ecx, [PlayerPtr]
+    test ecx, ecx
+    jz 0x00438549
+    
+    mov ecx, [PlayerPtr]
     mov ecx, [ecx+0x20]
     cmp dword [var.IsSpectatorArray+ecx*4], 1
     jz 0x004384DF
     
     mov ecx, [PlayerPtr]
-    test ecx, ecx
-    jz 0x00438549
-    
     jmp 0x0043852A
 
 _TechnoClass__Visual_Character_Spectator_Stuff:

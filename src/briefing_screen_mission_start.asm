@@ -9,6 +9,7 @@ _Start_Scenario_Force_Briefing_Screen:
     call    0x0059CC40 ; loads bunch of resources
     
     
+    ; load some stuff to get text color right on button
     mov     ecx, 0
     push    ecx
     call    [0x006CA368]
