@@ -33,6 +33,7 @@ retn ; For some reason the game executes the first function found in the extende
 %include "src/anticheat_test.asm"
 
 ; other
+%include "src/nco_bug_fix.asm"
 %include "src/briefing_screen_mission_start.asm"
 ;%include "src/no_blowfish_dll.asm"
 %include "src/briefing_restate_map_file.asm"

@@ -81,13 +81,11 @@ _Create_Units_Selectable_Spawning_Locations:
     mov byte [esp+edi+0x90], 1 ; Set the currenly used spawn as used
  
     mov eax, [esp+0x24] ; House number to generate for
-    
-    mov dword [var.UsedSpawnsArray+4*edi], eax
-    
+        
     cmp dword [var.SpawnLocationsArray+eax*4], -1
-    jz .Normal_Code
+    jz .Set_Normal_Spawn_Then_Normal_Code
     
-    mov dword [var.UsedSpawnsArray+4*edi], -1
+;    mov dword [var.UsedSpawnsArray+4*edi], -1 ; COMMENTED OUT TO FIX PRE-PLACED SPAWNS ISSUE, MIGHT CREATE NEW ISSUES
 
     mov edx, eax
     
@@ -109,3 +107,8 @@ _Create_Units_Selectable_Spawning_Locations:
     mov edi, [esp+0x10] ; HouseClass to generate for
     xor edx, edx
     jmp 0x005DEBD3
+    
+.Set_Normal_Spawn_Then_Normal_Code:
+    mov dword [var.UsedSpawnsArray+4*edi], eax
+    jmp .Normal_Code
+    
