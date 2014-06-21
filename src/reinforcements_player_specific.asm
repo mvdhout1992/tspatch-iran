@@ -2,6 +2,17 @@
 @JMP 0x0044B0CF _Get_HouseType_From_Index_Spawn_Fake
 @JMP 0x00628600 _TeamTypeClass__Read_INI_Fake_House_Name_Skip
 @JMP 0x005DDB2B _Read_Scenario_INI_Reinforcements_House_Hack
+@JMP 0x005BF068 _Do_Reinforcements_Stuff_Skip_Null_House_TeamType
+
+_Do_Reinforcements_Stuff_Skip_Null_House_TeamType:
+    jz 0x005BF681
+    
+    mov eax, [edi+0x88]
+    cmp eax, 0
+    jz 0x005BF681
+    
+    mov eax, [edi+0A0h]
+    jmp 0x005BF074
 
 _Read_Scenario_INI_Reinforcements_House_Hack:
     pushad
