@@ -112,3 +112,4 @@ _Create_Units_Selectable_Spawning_Locations:
     mov dword [var.UsedSpawnsArray+4*edi], eax
     jmp .Normal_Code
     
+    

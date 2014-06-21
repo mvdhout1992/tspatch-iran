@@ -30,6 +30,8 @@
 
 ; Arrays
 %define UnitClassArray_Count                        0x007B3468
+%define TeamTypesArray_Count                        0x007E4850
+%define TeamTypesArray                              0x007E4844     
 
 ; INI
 %define INIClass__INIClass                          0x004E8A30
