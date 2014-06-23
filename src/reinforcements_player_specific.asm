@@ -57,16 +57,16 @@ _Read_Scenario_INI_Reinforcements_House_Hack:
     cmp eax, -1
     jz .Set_To_Null
     
-    mov esi, [HouseClassArray]
-    mov eax, [esi+eax*4]
+    mov edi, [HouseClassArray]
+    mov eax, [edi+eax*4]
     
     mov [edx+0x88],  eax
-    jmp .Ret
+    jmp .Next_Iter
 
 .Set_To_Null:
     mov eax, 0
     mov [edx+0x88],  eax
-        jmp .Ret
+    jmp .Next_Iter
 
 _TeamTypeClass__Read_INI_Fake_House_Name_Skip:
     call 0x44B0A0
