@@ -47,4 +47,4 @@ retn ; For some reason the game executes the first function found in the extende
 %include "src/reinforcements_player_specific.asm"
 %include "src/no_options_menu_animation.asm"
 %include "src/internet_cncnet.asm"
-
+%include "src/tiberium_stuff.asm"
