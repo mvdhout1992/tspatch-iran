@@ -1,4 +1,4 @@
-@HOOK 0x00589D31 _Read_SUN_INI_Detail_Level_Setting
+;@HOOK 0x00589D31 _Read_SUN_INI_Detail_Level_Setting
 
 _Read_SUN_INI_Detail_Level_Setting:
     push eax
