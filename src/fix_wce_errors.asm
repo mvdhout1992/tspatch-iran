@@ -1,24 +1,29 @@
-;@HOOK 0x00589D31 _Read_SUN_INI_Detail_Level_Setting
+@JMP 0x00589D31 _Read_SUN_INI_InvisibleSouthDisruptorWave
+@JMP 0x00671113 _WaveClass_Draw_South_Disruptor_Wave 
 
-_Read_SUN_INI_Detail_Level_Setting:
+_WaveClass_Draw_South_Disruptor_Wave:
+    push ebp
+    push edx
+    push eax
+    mov ecx, esi
+    
+    cmp byte [var.InvisibleSouthDisruptorWave], 1
+    jz .Dont_Draw_Southward
+    
+    jmp 0x00671118
+    
+.Dont_Draw_Southward:
+    call 0x006704A0
+    jmp 0x0067111D
+
+_Read_SUN_INI_InvisibleSouthDisruptorWave:
     push eax
     
-    INIClass_Get_Bool INIClass_SUN_INI, str_Options, str_ForceLowestDetailLevel, 1
-    cmp al, 1
+    INIClass_Get_Bool INIClass_SUN_INI, str_Options, str_InvisibleSouthDisruptorWave, 0
+    mov [var.InvisibleSouthDisruptorWave], al
     pop eax
-    jz .Force
-    
-    cmp eax, 2
-    mov [esi+14h], eax
-    jl .Out
-    mov eax, 2
-.Out:
     jmp 0x00589D3E
     
-.Force:
-    mov dword [esi+14h], 0
-    mov eax, 0
-    jmp 0x00589D3E
 
 ; Fixes for WaveClass errors related to laser and Ion Cannon ripple effect
 @JMP 0x006715F0 _sub_6715F0_RETN_Patch

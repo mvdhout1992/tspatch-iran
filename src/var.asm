@@ -39,5 +39,7 @@ var:
     
     .SaveGameLoadPathWide       RESB 512
     .SaveGameLoadPath           RESB 256
+    
+    .InvisibleSouthDisruptorWave RESB 1
 
 [section .text]

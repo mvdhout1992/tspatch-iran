@@ -97,6 +97,7 @@ str_stats_dmp: db "stats.dmp",0
 str_UseGraphicsPatch: db "UseGraphicsPatch",0
 
 str_ForceLowestDetailLevel db"ForceLowestDetailLevel",0
+str_InvisibleSouthDisruptorWave db"InvisibleSouthDisruptorWave",0
 
 str_Video_Windowed: db"Video.Windowed",0
 str_Video_WindowedScreenHeight db"Video.WindowedScreenHeight",0
