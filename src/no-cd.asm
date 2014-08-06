@@ -44,5 +44,10 @@ _CD_AlwaysFindTS:
     jmp 0x004756AB ; jump to retn instruction
 
 .Normal_Code:
-    sub esp, 148h
-    jmp 0x004754A6
+    sub     esp, 0x148
+    push    ebx
+    push    ebp
+    mov     ebx, ecx
+    push    esi
+    push    edi
+    jmp     0x004754AC

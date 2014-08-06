@@ -77,7 +77,9 @@ _InfantryClass__Read_INI_Get_HouseType_From_Name_SpawnX:
 
 _BuildingClass__Read_INI_Get_HouseType_From_Name_SpawnX:
     call Check_For_Spawn_Fake_HouseType_Name
+    push eax
     cmp eax, -1
+    
     jz .Normal_Code
     
     mov eax, [var.UsedSpawnsArray+eax*4]
@@ -88,11 +90,13 @@ _BuildingClass__Read_INI_Get_HouseType_From_Name_SpawnX:
     mov eax, [esi+eax*4]
     
     mov esi, eax
-    
+    pop esi
+    mov ecx, esi
     jmp 0x00434851
 
 
 .Normal_Code:
+    pop eax
     call HouseType_From_Name
     jmp 0x00434848 
 
